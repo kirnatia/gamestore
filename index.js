@@ -1,6 +1,7 @@
 const express = require('express');
+const path = require('path');
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 // init morgan
 const morgan = require('morgan');
@@ -18,12 +19,16 @@ app.use(cors());
 const client = require('./db/client');
 client.connect();
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
-});
-
-// Router: /api
+// Serve API routes
 app.use('/api', require('./api'));
+
+// Serve React app (build folder) statically
+app.use(express.static(path.join(__dirname, 'client/build')));
+
+// Handle other requests
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client/build/index.html'));
+});
 
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
